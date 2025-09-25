@@ -44,7 +44,7 @@ En esta salida, el programa calcula todas las combinaciones posibles de monedas 
 Aquí se reutilizan los cálculos previamente almacenados en una tabla de memoria (memoización). Esto evita recomputaciones redundantes y hace que el programa sea mucho más rápido y eficiente, aunque entregue el mismo resultado final que la versión recursiva.
 
 ### Ejecución (versión con memoización)
-![Resultado con memoización](scla2.jpg)
+![Resultado con memoización](scala2.jpg)
 
 ## 📝 Conclusiones
 
