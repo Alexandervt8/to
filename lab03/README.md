@@ -72,4 +72,4 @@ g++ main.cpp -o main
 
 ------------------------------------------------------------------------
 
-✍️ Autor: *\[Tu nombre aquí\]*
+✍️ Autor: *\[Alexander Valdiviezo\]*
