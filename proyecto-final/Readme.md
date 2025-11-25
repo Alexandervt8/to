@@ -79,6 +79,7 @@ Se utiliza la BD:
 cafe_db
 ```
 
+
 ### Tablas requeridas:
 
 ```sql
@@ -89,6 +90,41 @@ CREATE TABLE clientes (
   telefono VARCHAR(50),
   activo TINYINT DEFAULT 1,
   fecha_registro DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE categorias (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  nombre VARCHAR(150)
+);
+
+CREATE TABLE productos (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  nombre VARCHAR(150),
+  precio DOUBLE,
+  categoria_id INT,
+  activo TINYINT DEFAULT 1,
+  FOREIGN KEY (categoria_id) REFERENCES categorias(id)
+);
+
+CREATE TABLE pedidos (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  cliente_id INT,
+  fecha DATETIME,
+  estado VARCHAR(20),
+  metodo_pago VARCHAR(20),
+  total DOUBLE,
+  FOREIGN KEY (cliente_id) REFERENCES clientes(id)
+);
+
+CREATE TABLE pedido_items (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  pedido_id INT,
+  producto_id INT,
+  cantidad INT,
+  precio_unitario DOUBLE,
+  subtotal DOUBLE,
+  FOREIGN KEY (pedido_id) REFERENCES pedidos(id),
+  FOREIGN KEY (producto_id) REFERENCES productos(id)
 );
 ...
 ```
