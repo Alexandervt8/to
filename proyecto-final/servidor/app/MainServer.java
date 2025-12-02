@@ -9,6 +9,9 @@ public class MainServer {
     public static void main(String[] args) {
 
         try {
+            // Iniciar servidor HTTP
+            new Thread(() -> HttpServerApp.iniciar()).start();
+
             int PUERTO = 5000;
 
             ServerSocket server = new ServerSocket(PUERTO);
@@ -17,7 +20,8 @@ public class MainServer {
             System.out.println("========================================");
             System.out.println(" SERVIDOR DE CAFETERIA HÍBRIDA");
             System.out.println(" IP Local: " + ipLocal);
-            System.out.println(" Puerto: " + PUERTO);
+            System.out.println(" Puerto Socket: " + PUERTO);
+            System.out.println(" Puerto HTTP: 8080");
             System.out.println(" Esperando clientes...");
             System.out.println("========================================");
 

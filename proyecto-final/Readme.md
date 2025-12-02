@@ -1,31 +1,84 @@
-# ☕ Sistema de Cafetería Híbrida — Cliente / Servidor (Java + Sockets)
+# ☕ Sistema de Cafetería Híbrida — Cliente / Servidor (Java + Sockets + HTTP + HTML)
 
-Este proyecto implementa un sistema de **Cafetería Híbrida** con arquitectura **Cliente–Servidor**, desarrollado en Java utilizando **Sockets TCP**, **MySQL** y el patrón **MVC**.
+Este proyecto implementa un sistema de **Cafetería Híbrida** con arquitectura **Cliente–Servidor**, combinando dos tecnologías:
 
-El sistema permite:
+- **Sockets TCP** para clientes de consola.
+- **HTTP + REST** para clientes web.
 
-- Registrar pedidos desde estaciones cliente.
-- Registrar nuevos clientes.
-- Guardar los pedidos con sus ítems en la base de datos.
-- Manejar múltiples clientes conectados a un servidor central.
+Usa Java, MySQL y el patrón **MVC**, y permite registrar clientes, pedidos y gestionar productos tanto desde consola como desde páginas HTML servidas por el mismo servidor.
 
-## 📌 Características principales
+---
 
-### 🖥 Servidor
-- Conexión a MySQL usando JDBC.
-- Manejo de múltiples clientes (multihilo).
-- Recepción de objetos `Pedido` y `Cliente`.
-- Persistencia de datos mediante DAOs.
-- Control de transacciones al registrar pedidos.
-- Validación de llaves foráneas.
+## 🚀 Funcionalidades del Sistema
 
-### 📱 Cliente
+### ✔️ Funciones principales
+
+- Registro de clientes (por consola y vía HTML).
+- Registro de pedidos con items.
+- Persistencia en MySQL mediante DAOs.
+- Manejo de múltiples conexiones por socket (multihilo).
+- Servidor HTTP embebido para cargar HTML, CSS y JS.
+- API REST para clientes externos (navegador, apps).
+- Manejo de errores SQL (incluye correos duplicados).
+
+---
+
+## 🖥 Servidor (Sockets + HTTP + REST)
+
+El servidor combina dos módulos:
+
+### 🔹 1. Servidor TCP (Puerto 5000)
+- Manejo de múltiples clientes con hilos.
+- Recibe objetos `Cliente` y `Pedido`.
+- Inserción de datos en MySQL.
+- Uso de `ObjectInputStream` y `ObjectOutputStream`.
+
+### 🔹 2. Servidor HTTP (Puerto 8080)
+Implementado con `com.sun.net.httpserver.HttpServer`.
+
+Incluye:
+
+- Servidor web estático que sirve la carpeta:
+
+## 📱 Clientes del Sistema
+
+El sistema cuenta con **dos tipos de clientes independientes**, cada uno usando un tipo distinto de comunicación con el servidor.
+
+Ambos clientes pueden operar simultáneamente contra el mismo servidor híbrido.
+
+### 🔹 1. Cliente por Consola (Socket TCP – Puerto 5000)
+
+Este cliente es una aplicación en Java que funciona directamente desde consola y se comunica con el servidor mediante **Sockets TCP**, enviando objetos Java serializados (`Cliente`, `Pedido`).
+
+**Características:**
+
 - Menú interactivo por consola.
-- Opción para generar pedidos.
-- Opción para registrar nuevos clientes.
-- Comunicación con el servidor mediante objetos serializados.
+- Registro de nuevos clientes enviando un objeto `Cliente`.
+- Generación de pedidos con múltiples ítems.
 - Cálculo automático del total del pedido.
-- Envío de fecha, método de pago y estado del pedido.
+- Envío completo del pedido: fecha, estado, método de pago, monto final.
+- Comunicación binaria con el servidor:
+  - `ObjectInputStream`
+  - `ObjectOutputStream`
+- Manejo automático de la conexión al puerto **5000**.
+
+**Uso típico:**
+1. El usuario abre la aplicación de consola.
+2. Selecciona registrar cliente o generar pedido.
+3. El sistema envía objetos serializados al servidor.
+4. El servidor procesa y responde con mensajes de confirmación.
+
+### 🔹 2. Cliente Web (HTML, CSS, JS – HTTP REST – Puerto 8080)
+
+Este cliente es un frontend accesible desde cualquier navegador dentro de la red local.  
+Es servido directamente por el **servidor HTTP embebido en Java**, sin necesidad de Apache, XAMPP u otro servidor externo.
+
+**Características principales:**
+
+- Interfaz gráfica moderna con HTML5, Bootstrap y JavaScript.
+- Registro de clientes mediante:
+
+---
 
 ## 📂 Estructura del Proyecto
 
@@ -35,6 +88,7 @@ pedidos/
  │     ├── app/
  │     │     ├── MainServer.java
  │     │     ├── ClientHandler.java
+ │     │     ├── HttpServerApp.java
  │     ├── controller/
  │     │     └── PedidoController.java
  │     ├── dao/
@@ -67,6 +121,12 @@ pedidos/
  │           ├── Pedido.java
  │           └── PedidoItem.java
  │
+ ├── web/  <-- Carpeta servida por el servidor Java
+ │     ├── menu.html
+ │     ├── reservation.html
+ │     ├── js/
+ │     ├── css/
+ │     └── img/
  ├── lib/
  │     └── mysql-connector-j-9.4.0.jar
 ```
@@ -135,8 +195,8 @@ CREATE TABLE pedido_items (
 
 ```
 cd servidor
-javac -cp ".;..\lib\mysql-connector-j-9.4.0.jar" -d out app\*.java controller\*.java dao\*.java db\*.java model\*.java
-java -cp "out;..\lib\mysql-connector-j-9.4.0.jar" com.cafe.app.MainServer
+javac -cp ".;..\lib\mysql-connector-j-9.4.0.jar;..\lib\gson-2.10.1.jar" ^-d out app\*.java controller\*.java dao\*.java db\*.java model\*.java
+java -cp "out;..\lib\mysql-connector-j-9.4.0.jar;..\lib\gson-2.10.1.jar" com.cafe.app.MainServer
 ```
 
 ### Cliente
@@ -145,6 +205,13 @@ java -cp "out;..\lib\mysql-connector-j-9.4.0.jar" com.cafe.app.MainServer
 cd cliente
 javac -cp ".;" -d out app\*.java controller\*.java view\*.java model\*.java
 java -cp "out" com.cafe.app.MainClient
+```
+
+### Acceder al sitio web desde cualquier PC:
+
+```
+http://192.168.0.7:8080/
+
 ```
 
 ## Autor
