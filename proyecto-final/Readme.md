@@ -143,49 +143,187 @@ cafe_db
 ### Tablas requeridas:
 
 ```sql
-CREATE TABLE clientes (
+-- =========================================
+-- BASE DE DATOS
+-- =========================================
+CREATE DATABASE IF NOT EXISTS cafe_db;
+USE cafe_db;
+
+-- =========================================
+-- CLIENTES (compatible con el original)
+-- =========================================
+CREATE TABLE IF NOT EXISTS clientes (
   id INT AUTO_INCREMENT PRIMARY KEY,
   nombre VARCHAR(150),
+  documento VARCHAR(20),
   email VARCHAR(150),
   telefono VARCHAR(50),
   activo TINYINT DEFAULT 1,
   fecha_registro DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE categorias (
+-- =========================================
+-- USUARIOS (empleados del restaurante)
+-- =========================================
+CREATE TABLE IF NOT EXISTS usuarios (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  nombre VARCHAR(100),
+  rol VARCHAR(50), -- admin, cajero, mozo, cocina
+  activo TINYINT DEFAULT 1
+);
+
+-- =========================================
+-- MESAS
+-- =========================================
+CREATE TABLE IF NOT EXISTS mesas (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  numero INT,
+  capacidad INT,
+  estado VARCHAR(20) DEFAULT 'libre'
+);
+
+-- =========================================
+-- CATEGORÍAS
+-- =========================================
+CREATE TABLE IF NOT EXISTS categorias (
   id INT AUTO_INCREMENT PRIMARY KEY,
   nombre VARCHAR(150)
 );
 
-CREATE TABLE productos (
+-- =========================================
+-- PRODUCTOS (mejorado)
+-- =========================================
+CREATE TABLE IF NOT EXISTS productos (
   id INT AUTO_INCREMENT PRIMARY KEY,
   nombre VARCHAR(150),
   precio DOUBLE,
+  tiempo_preparacion INT DEFAULT 0,
   categoria_id INT,
   activo TINYINT DEFAULT 1,
   FOREIGN KEY (categoria_id) REFERENCES categorias(id)
 );
 
-CREATE TABLE pedidos (
+-- =========================================
+-- INGREDIENTES
+-- =========================================
+CREATE TABLE IF NOT EXISTS ingredientes (
   id INT AUTO_INCREMENT PRIMARY KEY,
-  cliente_id INT,
-  fecha DATETIME,
-  estado VARCHAR(20),
-  metodo_pago VARCHAR(20),
-  total DOUBLE,
-  FOREIGN KEY (cliente_id) REFERENCES clientes(id)
+  nombre VARCHAR(150),
+  unidad VARCHAR(20),
+  activo TINYINT DEFAULT 1
 );
 
-CREATE TABLE pedido_items (
+-- =========================================
+-- INVENTARIO
+-- =========================================
+CREATE TABLE IF NOT EXISTS inventarios (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  ingrediente_id INT UNIQUE,
+  stock_actual DOUBLE,
+  stock_minimo DOUBLE DEFAULT 0,
+  FOREIGN KEY (ingrediente_id) REFERENCES ingredientes(id)
+);
+
+-- =========================================
+-- RECETAS (producto → ingredientes)
+-- =========================================
+CREATE TABLE IF NOT EXISTS producto_ingredientes (
+  producto_id INT,
+  ingrediente_id INT,
+  cantidad DOUBLE,
+  PRIMARY KEY (producto_id, ingrediente_id),
+  FOREIGN KEY (producto_id) REFERENCES productos(id),
+  FOREIGN KEY (ingrediente_id) REFERENCES ingredientes(id)
+);
+
+-- =========================================
+-- PEDIDOS (restaurante real)
+-- =========================================
+CREATE TABLE IF NOT EXISTS pedidos (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  cliente_id INT,
+  mesa_id INT,
+  usuario_id INT,
+  tipo VARCHAR(20),        -- mesa, delivery, llevar
+  estado VARCHAR(20),      -- abierto, cerrado, cancelado
+  fecha DATETIME DEFAULT CURRENT_TIMESTAMP,
+  total DOUBLE DEFAULT 0,
+  FOREIGN KEY (cliente_id) REFERENCES clientes(id),
+  FOREIGN KEY (mesa_id) REFERENCES mesas(id),
+  FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
+);
+
+-- =========================================
+-- ITEMS DEL PEDIDO (con cocina)
+-- =========================================
+CREATE TABLE IF NOT EXISTS pedido_items (
   id INT AUTO_INCREMENT PRIMARY KEY,
   pedido_id INT,
   producto_id INT,
   cantidad INT,
   precio_unitario DOUBLE,
   subtotal DOUBLE,
+  estado VARCHAR(20) DEFAULT 'pendiente',
   FOREIGN KEY (pedido_id) REFERENCES pedidos(id),
   FOREIGN KEY (producto_id) REFERENCES productos(id)
 );
+
+-- =========================================
+-- MOVIMIENTOS DE INVENTARIO (KARDEX)
+-- =========================================
+CREATE TABLE IF NOT EXISTS inventario_movimientos (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  ingrediente_id INT,
+  tipo VARCHAR(20), -- entrada, salida, ajuste
+  cantidad DOUBLE,
+  referencia VARCHAR(100),
+  fecha DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (ingrediente_id) REFERENCES ingredientes(id)
+);
+
+-- =========================================
+-- FACTURACIÓN
+-- =========================================
+CREATE TABLE IF NOT EXISTS facturas (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  pedido_id INT,
+  cliente_id INT,
+  fecha DATETIME DEFAULT CURRENT_TIMESTAMP,
+  subtotal DOUBLE,
+  impuesto DOUBLE,
+  total DOUBLE,
+  tipo VARCHAR(20), -- boleta, factura
+  numero VARCHAR(50),
+  estado VARCHAR(20),
+  FOREIGN KEY (pedido_id) REFERENCES pedidos(id),
+  FOREIGN KEY (cliente_id) REFERENCES clientes(id)
+);
+
+CREATE TABLE IF NOT EXISTS factura_items (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  factura_id INT,
+  producto_id INT,
+  cantidad INT,
+  precio_unitario DOUBLE,
+  subtotal DOUBLE,
+  FOREIGN KEY (factura_id) REFERENCES facturas(id),
+  FOREIGN KEY (producto_id) REFERENCES productos(id)
+);
+
+-- =========================================
+-- AUDITORÍA
+-- =========================================
+CREATE TABLE IF NOT EXISTS auditoria (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  usuario_id INT,
+  tabla_afectada VARCHAR(50),
+  accion VARCHAR(20),
+  registro_id INT,
+  fecha DATETIME DEFAULT CURRENT_TIMESTAMP,
+  detalle TEXT,
+  FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
+);
+
 ...
 ```
 
