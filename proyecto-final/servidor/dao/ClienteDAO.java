@@ -10,32 +10,43 @@ import java.util.Optional;
 
 public class ClienteDAO {
 
+    // ===============================
     // SQL
+    // ===============================
     private static final String INSERT_SQL =
-            "INSERT INTO clientes (nombre, email, telefono) VALUES (?, ?, ?)";
-    private static final String UPDATE_SQL =
-            "UPDATE clientes SET nombre = ?, email = ?, telefono = ? WHERE id = ?";
-    private static final String DELETE_SQL =
-            "DELETE FROM clientes WHERE id = ?";
-    private static final String SELECT_BY_ID_SQL =
-            "SELECT id, nombre, email, telefono FROM clientes WHERE id = ?";
-    private static final String SELECT_ALL_SQL =
-            "SELECT id, nombre, email, telefono FROM clientes ORDER BY id DESC";
-    private static final String SELECT_BY_EMAIL_SQL =
-            "SELECT id, nombre, email, telefono FROM clientes WHERE email = ?";
+        "INSERT INTO clientes(nombre, documento, email, telefono, activo) VALUES (?, ?, ?, ?, 1)";
 
-    /** Crea un cliente y devuelve el ID generado. */
+    private static final String UPDATE_SQL =
+        "UPDATE clientes SET nombre = ?, documento = ?, email = ?, telefono = ? WHERE id = ?";
+
+    private static final String DESACTIVATE_SQL =
+        "UPDATE clientes SET activo = 0 WHERE id = ?";
+
+    private static final String SELECT_BY_ID_SQL =
+        "SELECT id, nombre, documento, email, telefono, activo FROM clientes WHERE id = ?";
+
+    private static final String SELECT_ALL_SQL =
+        "SELECT id, nombre, documento, email, telefono, activo FROM clientes WHERE activo = 1 ORDER BY id DESC";
+
+    private static final String SELECT_BY_EMAIL_SQL =
+        "SELECT id, nombre, documento, email, telefono, activo FROM clientes WHERE email = ? AND activo = 1";
+
+    // ===============================
+    // CREAR CLIENTE
+    // ===============================
     public int create(Cliente c) throws SQLException {
+
         try (Connection con = DB.getConnection();
              PreparedStatement ps = con.prepareStatement(INSERT_SQL, Statement.RETURN_GENERATED_KEYS)) {
 
             ps.setString(1, c.getNombre());
-            ps.setString(2, c.getEmail());
-            ps.setString(3, c.getTelefono());
+            ps.setString(2, c.getDocumento());
+            ps.setString(3, c.getEmail());
+            ps.setString(4, c.getTelefono());
 
             int affected = ps.executeUpdate();
             if (affected == 0) {
-                throw new SQLException("No se pudo insertar el cliente, 0 filas afectadas.");
+                throw new SQLException("No se pudo insertar el cliente.");
             }
 
             try (ResultSet rs = ps.getGeneratedKeys()) {
@@ -43,42 +54,52 @@ public class ClienteDAO {
                     int id = rs.getInt(1);
                     c.setId(id);
                     return id;
-                } else {
-                    throw new SQLException("No se obtuvo ID generado para el cliente.");
                 }
             }
         }
+        throw new SQLException("No se obtuvo ID generado.");
     }
 
-    /** Actualiza un cliente existente por ID (>0). */
+    // ===============================
+    // ACTUALIZAR CLIENTE
+    // ===============================
     public boolean update(Cliente c) throws SQLException {
-      
+
         if (c.getId() <= 0) {
-            throw new IllegalArgumentException("El ID del cliente debe ser > 0 para actualizar.");
+            throw new IllegalArgumentException("ID inválido para actualizar.");
         }
+
         try (Connection con = DB.getConnection();
              PreparedStatement ps = con.prepareStatement(UPDATE_SQL)) {
 
             ps.setString(1, c.getNombre());
-            ps.setString(2, c.getEmail());
-            ps.setString(3, c.getTelefono());
-            ps.setInt(4, c.getId());
+            ps.setString(2, c.getDocumento());
+            ps.setString(3, c.getEmail());
+            ps.setString(4, c.getTelefono());
+            ps.setInt(5, c.getId());
 
             return ps.executeUpdate() > 0;
         }
     }
 
-    /** Elimina fisicamente un cliente por ID. */
-    public boolean delete(int id) throws SQLException {
+    // ===============================
+    // DESACTIVAR CLIENTE (SOFT DELETE)
+    // ===============================
+    public boolean desactivar(int id) throws SQLException {
+
         try (Connection con = DB.getConnection();
-             PreparedStatement ps = con.prepareStatement(DELETE_SQL)) {
+             PreparedStatement ps = con.prepareStatement(DESACTIVATE_SQL)) {
+
             ps.setInt(1, id);
             return ps.executeUpdate() > 0;
         }
     }
 
-    /** Busca un cliente por ID. */
+    // ===============================
+    // BUSCAR POR ID
+    // ===============================
     public Optional<Cliente> findById(int id) throws SQLException {
+
         try (Connection con = DB.getConnection();
              PreparedStatement ps = con.prepareStatement(SELECT_BY_ID_SQL)) {
 
@@ -89,9 +110,13 @@ public class ClienteDAO {
         }
     }
 
-    /** Lista todos los clientes. */
+    // ===============================
+    // LISTAR ACTIVOS
+    // ===============================
     public List<Cliente> findAll() throws SQLException {
+
         List<Cliente> lista = new ArrayList<>();
+
         try (Connection con = DB.getConnection();
              PreparedStatement ps = con.prepareStatement(SELECT_ALL_SQL);
              ResultSet rs = ps.executeQuery()) {
@@ -103,8 +128,11 @@ public class ClienteDAO {
         return lista;
     }
 
-    /** Busca por email. */
+    // ===============================
+    // BUSCAR POR EMAIL
+    // ===============================
     public Optional<Cliente> findByEmail(String email) throws SQLException {
+
         try (Connection con = DB.getConnection();
              PreparedStatement ps = con.prepareStatement(SELECT_BY_EMAIL_SQL)) {
 
@@ -115,17 +143,25 @@ public class ClienteDAO {
         }
     }
 
+    // ===============================
+    // MAPEO
+    // ===============================
     private Cliente mapRow(ResultSet rs) throws SQLException {
+
         Cliente c = new Cliente();
         c.setId(rs.getInt("id"));
         c.setNombre(rs.getString("nombre"));
+        c.setDocumento(rs.getString("documento"));
         c.setEmail(rs.getString("email"));
         c.setTelefono(rs.getString("telefono"));
- 
+        c.setActivo(rs.getBoolean("activo"));
+
         return c;
     }
 
+    // ===============================
+    // MÉTODOS LEGACY (compatibilidad)
+    // ===============================
     public int crear(Cliente c) throws SQLException { return create(c); }
     public List<Cliente> listar() throws SQLException { return findAll(); }
-    public boolean desactivar(int id) throws SQLException { return delete(id); }
 }
