@@ -1,16 +1,16 @@
+// ===============================
 // Variable global para el carrito
+// ===============================
 let carrito = [];
 
 document.addEventListener("DOMContentLoaded", function() {
-    
-    // Cargar productos si estamos en el menú
-    if(document.getElementById('lista-calientes')) {
+
+    if (document.getElementById('lista-calientes')) {
         cargarProductos();
     }
 
-    // Activar formulario de registro si estamos en esa página
     const formCliente = document.getElementById('form-cliente');
-    if(formCliente) {
+    if (formCliente) {
         formCliente.addEventListener('submit', function(e) {
             e.preventDefault();
             registrarCliente();
@@ -18,78 +18,91 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 });
 
+// ===============================
+// CARGAR PRODUCTOS
+// ===============================
 function cargarProductos() {
     fetch('/api/productos')
-    .then(response => response.json())
-    .then(productos => {
-        const divCalientes = document.getElementById('lista-calientes');
-        const divFrios = document.getElementById('lista-frios');
-        divCalientes.innerHTML = "";
-        divFrios.innerHTML = "";
+        .then(response => response.json())
+        .then(productos => {
 
-        productos.forEach(prod => {
-            // Pasamos el objeto producto completo como string al botón
-            const prodString = encodeURIComponent(JSON.stringify(prod));
+            const divCalientes = document.getElementById('lista-calientes');
+            const divFrios = document.getElementById('lista-frios');
+            divCalientes.innerHTML = "";
+            divFrios.innerHTML = "";
 
-            const html = `
-            <div class="row align-items-center mb-5">
-                <div class="col-4 col-sm-3">
-                    <img class="w-100 rounded-circle mb-3 mb-sm-0" src="img/menu-1.jpg" alt="">
-                    <h5 class="menu-price">S/ ${prod.precio.toFixed(2)}</h5>
-                </div>
-                <div class="col-8 col-sm-9">
-                    <h4>${prod.nombre}</h4>
-                    <p class="m-0 text-muted" style="font-size: 0.9em;">Delicioso y fresco</p>
-                    <div class="mt-2">
-                        <button class="btn btn-sm btn-outline-primary" onclick="agregarAlCarrito('${prodString}')">
-                            <i class="fa fa-plus"></i> Añadir al Pedido
-                        </button>
+            productos.forEach(prod => {
+
+                // ❗ Mostrar solo productos activos
+                if (prod.activo === false) return;
+
+                const prodString = encodeURIComponent(JSON.stringify(prod));
+
+                const html = `
+                <div class="row align-items-center mb-5">
+                    <div class="col-4 col-sm-3">
+                        <img class="w-100 rounded-circle mb-3 mb-sm-0" src="img/menu-1.jpg" alt="">
+                        <h5 class="menu-price">S/ ${prod.precio.toFixed(2)}</h5>
+                    </div>
+                    <div class="col-8 col-sm-9">
+                        <h4>${prod.nombre}</h4>
+                        <p class="m-0 text-muted" style="font-size: 0.9em;">Delicioso y fresco</p>
+                        <div class="mt-2">
+                            <button class="btn btn-sm btn-outline-primary"
+                                onclick="agregarAlCarrito('${prodString}')">
+                                <i class="fa fa-plus"></i> Añadir al Pedido
+                            </button>
+                        </div>
                     </div>
                 </div>
-            </div>
-            `;
+                `;
 
-            if (prod.categoriaId === 1) {
-                divCalientes.innerHTML += html;
-            } else {
-                divFrios.innerHTML += html;
-            }
-        });
-    })
-    .catch(err => console.error(err));
+                if (prod.categoriaId === 1) {
+                    divCalientes.innerHTML += html;
+                } else {
+                    divFrios.innerHTML += html;
+                }
+            });
+        })
+        .catch(err => console.error(err));
 }
 
+// ===============================
+// AGREGAR AL CARRITO
+// ===============================
 function agregarAlCarrito(prodEncoded) {
     const prod = JSON.parse(decodeURIComponent(prodEncoded));
-    
-    // Verificar si ya existe en el carrito
-    const existe = carrito.find(item => item.id === prod.id);
-    
+
+    const existe = carrito.find(item => item.productoId === prod.id);
+
     if (existe) {
         existe.cantidad++;
     } else {
         carrito.push({
-            id: prod.id,
+            productoId: prod.id,
             nombre: prod.nombre,
-            precio: prod.precio,
-            cantidad: 1
+            cantidad: 1,
+            estado: "pendiente" // 🔥 importante para cocina
         });
     }
+
     actualizarCarritoUI();
-    // Efecto visual simple
     alert("¡" + prod.nombre + " añadido al carrito!");
 }
 
+// ===============================
+// ACTUALIZAR UI DEL CARRITO
+// (solo visual, NO backend)
+// ===============================
 function actualizarCarritoUI() {
+
     const cartCount = document.getElementById('cart-count');
     const cartItemsDiv = document.getElementById('cart-items');
     const cartTotal = document.getElementById('cart-total');
-    
-    // Actualizar contador flotante
+
     const totalItems = carrito.reduce((sum, item) => sum + item.cantidad, 0);
     cartCount.innerText = totalItems;
 
-    // Actualizar lista en el modal
     if (carrito.length === 0) {
         cartItemsDiv.innerHTML = "<p class='text-muted text-center'>Tu carrito está vacío.</p>";
         cartTotal.innerText = "S/ 0.00";
@@ -100,34 +113,44 @@ function actualizarCarritoUI() {
     let totalPrecio = 0;
 
     carrito.forEach((item, index) => {
-        const subtotal = item.precio * item.cantidad;
-        totalPrecio += subtotal;
-        
+
+        // ⚠️ precio solo para UI (no se envía)
+        const precioMock = 0; // opcional
+        const subtotal = precioMock * item.cantidad;
+
         html += `
         <li class="list-group-item d-flex justify-content-between align-items-center">
             <div>
                 <b>${item.nombre}</b> <br>
-                <small>S/ ${item.precio} x ${item.cantidad}</small>
+                <small>Cantidad: ${item.cantidad}</small>
             </div>
-            <div class="d-flex align-items-center">
-                <span class="badge badge-primary badge-pill mr-2">S/ ${subtotal.toFixed(2)}</span>
-                <button class="btn btn-sm btn-danger" onclick="eliminarDelCarrito(${index})">&times;</button>
+            <div>
+                <button class="btn btn-sm btn-danger"
+                    onclick="eliminarDelCarrito(${index})">&times;</button>
             </div>
         </li>
         `;
     });
+
     html += "</ul>";
-    
+
     cartItemsDiv.innerHTML = html;
-    cartTotal.innerText = "S/ " + totalPrecio.toFixed(2);
+    cartTotal.innerText = "Calculado en el servidor";
 }
 
+// ===============================
+// ELIMINAR ITEM
+// ===============================
 function eliminarDelCarrito(index) {
     carrito.splice(index, 1);
     actualizarCarritoUI();
 }
 
+// ===============================
+// FINALIZAR PEDIDO
+// ===============================
 function finalizarPedido() {
+
     if (carrito.length === 0) {
         alert("El carrito está vacío.");
         return;
@@ -135,55 +158,51 @@ function finalizarPedido() {
 
     const clienteId = document.getElementById('cliente-id-input').value;
     if (!clienteId) {
-        alert("Por favor, ingresa tu ID de cliente para continuar.");
+        alert("Por favor, ingresa tu ID de cliente.");
         return;
     }
 
-    // Calcular total final
-    const total = carrito.reduce((sum, item) => sum + (item.precio * item.cantidad), 0);
-
-    // Estructura de datos para el servidor
     const pedidoData = {
         clienteId: parseInt(clienteId),
-        total: total,
+        tipo: "mesa",
+        estado: "abierto",
         items: carrito.map(item => ({
-            productoId: item.id,
+            productoId: item.productoId,
             cantidad: item.cantidad,
-            precio: item.precio
+            estado: item.estado
         }))
     };
 
-    // Enviar al Backend
     fetch('/api/realizar-pedido', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(pedidoData)
     })
-    .then(response => response.text())
+    .then(res => res.text())
     .then(msg => {
-        alert("Respuesta del Servidor: " + msg);
+        alert(msg);
         if (msg.includes("correctamente")) {
-            carrito = []; // Limpiar carrito
+            carrito = [];
             actualizarCarritoUI();
-            $('#cartModal').modal('hide'); // Cerrar modal (jQuery)
+            $('#cartModal').modal('hide');
             document.getElementById('cliente-id-input').value = "";
         }
     })
-    .catch(err => {
-        alert("Error al procesar pedido: " + err);
-    });
+    .catch(err => alert("Error: " + err));
 }
 
+// ===============================
+// REGISTRAR CLIENTE
+// ===============================
 function registrarCliente() {
+
     const data = {
         nombre: document.getElementById('nombre').value,
         email: document.getElementById('email').value,
         telefono: document.getElementById('telefono').value
     };
 
-    const servidor = window.location.origin;
-
-    fetch(servidor + '/cliente/registrar', {
+    fetch('/cliente/registrar', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)

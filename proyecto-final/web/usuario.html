@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>KOPPEE - Crear Usuario</title>
+<link href="css/style.min.css" rel="stylesheet">
+</head>
+<body>
+
+<div class="container-fluid page-header mb-5 position-relative overlay-bottom">
+<div class="d-flex flex-column align-items-center justify-content-center pt-5" style="min-height:400px">
+<h1 class="display-4 text-white text-uppercase">Usuario</h1>
+</div>
+</div>
+
+<div class="container-fluid py-5">
+<div class="container">
+<div class="reservation overlay-top overlay-bottom">
+<div class="row align-items-center">
+
+<div class="col-lg-6">
+<div class="p-5">
+<h1 class="display-3 text-primary">Nuevo</h1>
+<h1 class="text-white">Usuario</h1>
+</div>
+</div>
+
+<div class="col-lg-6">
+<div class="text-center p-5" style="background: rgba(51,33,29,.8);">
+
+<form id="form-usuario">
+<input class="form-control bg-transparent border-primary p-4 mb-3" placeholder="Nombre" id="nombre">
+<input class="form-control bg-transparent border-primary p-4 mb-3" placeholder="Usuario" id="usuario">
+<input class="form-control bg-transparent border-primary p-4 mb-3" type="password" placeholder="Password" id="password">
+<select class="form-control bg-transparent border-primary p-4 mb-3" id="rol">
+<option value="admin">Admin</option>
+<option value="caja">Caja</option>
+<option value="cocina">Cocina</option>
+</select>
+<button class="btn btn-primary btn-block py-3">Crear Usuario</button>
+<div id="msg" class="text-white mt-3"></div>
+</form>
+
+</div>
+</div>
+
+</div>
+</div>
+</div>
+</div>
+
+<script>
+form-usuario.onsubmit=e=>{
+e.preventDefault();
+fetch("/api/usuarios",{method:"POST",headers:{"Content-Type":"application/json"},
+body:JSON.stringify({
+nombre:nombre.value,
+usuario:usuario.value,
+password:password.value,
+rol:rol.value,
+activo:true
+})}).then(r=>r.text()).then(t=>msg.innerText=t);
+}
+</script>
+
+</body>
+</html>
