@@ -84,51 +84,88 @@ Es servido directamente por el **servidor HTTP embebido en Java**, sin necesidad
 
 ```
 pedidos/
- ├── servidor/
- │     ├── app/
- │     │     ├── MainServer.java
- │     │     ├── ClientHandler.java
- │     │     ├── HttpServerApp.java
- │     ├── controller/
- │     │     └── PedidoController.java
- │     ├── dao/
- │     │     ├── CategoriaDAO.java
- │     │     ├── ClienteDAO.java
- │     │     ├── ProductoDAO.java
- │     │     └── PedidoDAO.java
- │     ├── db/
- │     │     └── DB.java
- │     └── model/
- │           ├── Cliente.java
- │           ├── Categoria.java
- │           ├── Producto.java
- │           ├── Pedido.java
- │           └── PedidoItem.java
- │
- ├── cliente/
- │     ├── app/
- │     │     └── MainClient.java
- │     ├── controller/
- │     │     └── PedidoClienteController.java
- │     ├── view/
- │     │     ├── MenuPrincipal.java
- │     │     ├── VistaPedido.java
- │     │     └── VistaCliente.java
- │     └── model/
- │           ├── Cliente.java
- │           ├── Categoria.java
- │           ├── Producto.java
- │           ├── Pedido.java
- │           └── PedidoItem.java
- │
- ├── web/  <-- Carpeta servida por el servidor Java
- │     ├── menu.html
- │     ├── reservation.html
- │     ├── js/
- │     ├── css/
- │     └── img/
- ├── lib/
- │     └── mysql-connector-j-9.4.0.jar
+│
+├── servidor/
+│   │
+│   ├── app/
+│   │   ├── MainServer.java              ✅
+│   │   ├── ClientHandler.java           ✅ (maneja Cliente, Pedido, Usuario)
+│   │   └── HttpServerApp.java           ✅ (API REST)
+│   │
+│   ├── controller/
+│   │   └── PedidoController.java        ✅
+│   │
+│   ├── dao/
+│   │   ├── ClienteDAO.java              ✅
+│   │   ├── ProductoDAO.java             ✅
+│   │   ├── CategoriaDAO.java            ✅
+│   │   ├── PedidoDAO.java               ✅
+│   │   └── UsuarioDAO.java              🆕
+│   │
+│   ├── db/
+│   │   └── DB.java                      ✅
+│   │
+│   └── model/
+│       ├── Cliente.java                 ✅
+│       ├── Producto.java                ✅
+│       ├── Categoria.java               ✅
+│       ├── Pedido.java                  ✅
+│       ├── PedidoItem.java              ✅
+│       └── Usuario.java                 🆕
+│
+├── cliente/
+│   │
+│   ├── app/
+│   │   └── MainClient.java              ✅
+│   │
+│   ├── controller/
+│   │   └── PedidoClienteController.java ✅
+│   │
+│   ├── view/
+│   │   ├── MenuPrincipal.java           ✅
+│   │   ├── VistaCliente.java            ✅
+│   │   ├── VistaPedido.java             ✅
+│   │   ├── VistaUsuario.java            🆕 
+│   │   └── VistaCategoria.java          🆕 
+│   │
+│   └── model/
+│       ├── Cliente.java                 ✅
+│       ├── Producto.java                ✅
+│       ├── Categoria.java               ✅
+│       ├── Pedido.java                  ✅
+│       ├── PedidoItem.java              ✅
+│       └── Usuario.java                 🆕
+│
+├── web/                         ← Servida por HttpServerApp
+│   │
+│   ├── index.html               🆕
+│   ├── menu.html                ✅
+│   ├── reservation.html         ✅ 
+│   ├── usuario.html             🆕
+│   ├── categoria.html           🆕
+│   ├── producto.html            🆕
+│   │
+│   ├── js/
+│   │   ├── app.js               ✅ (toda la lógica: cliente, usuario, producto, categoría)
+│   │   └── main.js              ✅ (UI / animaciones)
+│   │
+│   ├── css/
+│   │   └── style.min.css        ✅
+│   │
+│   ├── img/
+│   │   └── (imágenes)           ✅
+│   │
+│   └── lib/
+│       ├── owlcarousel/         ✅
+│       ├── tempusdominus/       ✅
+│       └── (otros assets)
+│
+├── lib/
+│   ├── mysql-connector-j-9.4.0.jar   ✅
+│   └── gson-2.10.1.jar               🆕
+│
+└── README.md (opcional)
+
 ```
 
 ## 🛢 Base de Datos (MySQL)
