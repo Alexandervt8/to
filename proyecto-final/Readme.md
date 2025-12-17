@@ -167,9 +167,12 @@ CREATE TABLE IF NOT EXISTS clientes (
 -- =========================================
 CREATE TABLE IF NOT EXISTS usuarios (
   id INT AUTO_INCREMENT PRIMARY KEY,
-  nombre VARCHAR(100),
-  rol VARCHAR(50), -- admin, cajero, mozo, cocina
-  activo TINYINT DEFAULT 1
+  nombre VARCHAR(100) NOT NULL,
+  usuario VARCHAR(50) NOT NULL UNIQUE,
+  password VARCHAR(100) NOT NULL,
+  rol VARCHAR(20) NOT NULL,
+  activo TINYINT DEFAULT 1,
+  fecha_registro DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
 -- =========================================
