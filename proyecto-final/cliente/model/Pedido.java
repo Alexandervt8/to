@@ -8,44 +8,39 @@ public class Pedido implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    public enum Estado {
-        PENDIENTE,
-        PAGADO,
-        CANCELADO
-    }
-
-    public enum MetodoPago {
-        EFECTIVO,
-        TARJETA,
-        YAPE,
-        PLIN
-    }
-
     private int id;
     private int clienteId;
-    private String fecha;
+    private Integer mesaId;     // nullable
+    private Integer usuarioId;  // nullable
+    private String tipo;        // mesa, delivery, llevar
+    private String estado;      // abierto, cerrado, cancelado
+    private String fecha;       
     private double total;
-    private Estado estado;
-    private MetodoPago metodoPago;
 
     private List<PedidoItem> items = new ArrayList<>();
 
     public Pedido() {}
 
-    public Pedido(int id, int clienteId, String fecha, double total, Estado estado, MetodoPago metodoPago) {
-        this.id = id;
-        this.clienteId = clienteId;
-        this.fecha = fecha;
-        this.total = total;
-        this.estado = estado;
-        this.metodoPago = metodoPago;
-    }
-
+    // ===============================
+    // GETTERS & SETTERS
+    // ===============================
     public int getId() { return id; }
     public void setId(int id) { this.id = id; }
 
     public int getClienteId() { return clienteId; }
     public void setClienteId(int clienteId) { this.clienteId = clienteId; }
+
+    public Integer getMesaId() { return mesaId; }
+    public void setMesaId(Integer mesaId) { this.mesaId = mesaId; }
+
+    public Integer getUsuarioId() { return usuarioId; }
+    public void setUsuarioId(Integer usuarioId) { this.usuarioId = usuarioId; }
+
+    public String getTipo() { return tipo; }
+    public void setTipo(String tipo) { this.tipo = tipo; }
+
+    public String getEstado() { return estado; }
+    public void setEstado(String estado) { this.estado = estado; }
 
     public String getFecha() { return fecha; }
     public void setFecha(String fecha) { this.fecha = fecha; }
@@ -53,12 +48,11 @@ public class Pedido implements Serializable {
     public double getTotal() { return total; }
     public void setTotal(double total) { this.total = total; }
 
-    public Estado getEstado() { return estado; }
-    public void setEstado(Estado estado) { this.estado = estado; }
-
-    public MetodoPago getMetodoPago() { return metodoPago; }
-    public void setMetodoPago(MetodoPago metodoPago) { this.metodoPago = metodoPago; }
-
     public List<PedidoItem> getItems() { return items; }
-    public void addItem(PedidoItem item) { items.add(item); }
+    public void setItems(List<PedidoItem> items) { this.items = items; }
+
+    public void addItem(PedidoItem item) {
+        this.items.add(item);
+    }
 }
+
