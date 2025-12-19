@@ -374,7 +374,7 @@ CREATE TABLE IF NOT EXISTS auditoria (
 ```
 cd servidor
 javac -cp ".;..\lib\mysql-connector-j-9.4.0.jar;..\lib\gson-2.10.1.jar" ^-d out app\*.java controller\*.java dao\*.java db\*.java model\*.java
-java -cp "out;..\lib\mysql-connector-j-9.4.0.jar;..\lib\gson-2.10.1.jar" com.cafe.app.MainServer
+java -cp ".;out;..\lib\mysql-connector-j-9.4.0.jar;..\lib\gson-2.10.1.jar" com.cafe.app.MainServer
 ```
 
 ### Cliente
